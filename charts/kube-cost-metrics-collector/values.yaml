@@ -1,0 +1,76 @@
+prometheus:
+  kube-state-metrics:
+    releaseLabel: true
+    metricLabelsAllowlist:
+      - endpoints=[*]
+      - jobs=[*]
+      - namespaces=[*]
+      - nodes=[*]
+      - pods=[*]
+      - services=[*]
+    metricAnnotationsAllowList:
+      - endpoints=[*]
+      - jobs=[*]
+      - namespaces=[*]
+      - nodes=[*]
+      - pods=[*]
+      - services=[*]
+
+  serviceAccounts:
+    alertmanager:
+      create: false
+
+  kubeStateMetrics:
+    enabled: true
+
+  prometheus-node-exporter:
+    enabled: true
+    hostNetwork: false
+
+  prometheus-pushgateway:
+    enabled: true
+    persistentVolume:
+      enabled: false
+
+  alertmanager:
+    enabled: false
+
+  server:
+    remote_write:
+    # SynOps target skeleton. Target also includes tls and auth settings, extra headers and so on
+    - url: https://my.synops.in/storage/api/v2/write
+      name: synops
+
+    # SynOps Kubernetes data source id
+    dataSourceId: null
+    # Username which is used on SynOps Kubernetes data source registration
+    username: null
+    # Password which is used on SynOps Kubernetes data source registration
+    password: null
+    # Remote write SynOps target tls CA certificate file
+    caFile:
+
+    configMapOverrideName: prometheus-server-config
+    persistentVolume:
+      enabled: false
+    defaultFlagsOverride:
+    - --enable-feature=agent
+    - --config.file=/etc/config/prometheus.yml
+    - --web.enable-lifecycle
+    extraConfigmapMounts:
+    # Config map with CA cert file
+    - name: cert-config
+      mountPath: /etc/synops/ssl
+      configMap: prometheus-server-cert-config
+      subPath: ""
+      readOnly: true
+    extraSecretMounts:
+    # Secret with password file
+    - name: password-secret
+      mountPath: /etc/synops/auth
+      subPath: ""
+      secretName: prometheus-server-password-secret
+      readOnly: true
+  serverFiles:
+    prometheus.yml:
+      rule_files: []
